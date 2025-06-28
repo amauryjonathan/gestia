@@ -78,12 +78,10 @@ def main():
         elif choix == '3':
             # Démonstration
             try:
-                from gestia.utils.demo import creer_donnees_exemple, afficher_statistiques
-                from gestia.core.database import init_database
-                
-                init_database()
-                creer_donnees_exemple()
-                afficher_statistiques()
+                # Utiliser le script de génération de données de test
+                sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'data', 'scripts'))
+                from generate_test_data import generer_donnees_test
+                generer_donnees_test()
                 print("\n✅ Démonstration terminée !")
             except Exception as e:
                 print(f"\n❌ Erreur lors de la démonstration : {e}")
