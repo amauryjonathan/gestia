@@ -12,6 +12,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
+.pytest_cache/
 
 # Distribution / packaging
 .Python
@@ -49,7 +50,6 @@ nosetests.xml
 coverage.xml
 *.cover
 .hypothesis/
-.pytest_cache/
 
 # Translations
 *.mo

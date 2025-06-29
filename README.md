@@ -1,256 +1,167 @@
-# GESTIA - Système de Gestion d'Appareils
+# 🏭 GESTIA - Système de Gestion d'Appareils
 
-## 📋 Description
+Un système complet de gestion d'appareils électroménagers avec tests, diagnostics et suivi des réparations.
 
-GESTIA est un système complet de gestion d'appareils avec tests, diagnostics et réparations. Le système est basé sur un diagramme de classe UML et implémente toutes les relations et fonctionnalités décrites.
+## 📁 Structure du Projet
 
-## 🏗️ Architecture
+```
+gestia/
+├── 📁 src/gestia/           # Code source principal
+│   ├── 📁 core/             # Logique métier et modèles
+│   ├── 📁 ui/               # Interfaces utilisateur
+│   └── 📁 utils/            # Utilitaires
+├── 📁 data/                 # Données et environnements
+│   ├── 📁 backups/          # Sauvegardes des bases
+│   ├── 📁 samples/          # Données d'exemple CSV
+│   └── 📁 scripts/          # Scripts de gestion des données
+├── 📁 tools/                # Outils et scripts utilitaires
+├── 📁 tests/                # Tests automatisés
+│   └── 📁 unit/             # Tests unitaires
+├── 📁 docs/                 # Documentation
+├── main.py                  # Point d'entrée principal
+├── pyproject.toml           # Configuration du projet
+└── requirements.txt         # Dépendances Python
+```
 
-Le système est composé de plusieurs modules :
+## 🚀 Démarrage Rapide
 
-- **`models.py`** : Définition des classes et relations (SQLAlchemy ORM)
-- **`database.py`** : Gestion de la base de données
-- **`services.py`** : Logique métier et opérations CRUD
-- **`interface.py`** : Interface console interactive
-- **`gui.py`** : Interface graphique avec Tkinter
-- **`main.py`** : Point d'entrée principal avec choix d'interface
-- **`gui_launcher.py`** : Lanceur direct de l'interface graphique
-
-## 🗄️ Modèle de données
-
-### Classes principales :
-- **Appareil** : Gestion du cycle de vie des appareils
-- **Technicien** : Personnel technique
-- **SessionDeTest** : Sessions de test sur les appareils
-- **ProgrammeDeTest** : Programmes de test (Rapide, Coton 90, Essorage)
-- **CritereDeTest** : Critères de validation des tests
-- **DiagnosticReparation** : Diagnostics et réparations
-
-### Relations :
-- Un appareil peut avoir plusieurs sessions de test
-- Une session de test appartient à un appareil et un technicien
-- Une session contient plusieurs programmes de test
-- Un programme contient plusieurs critères
-- Un technicien peut valider des critères et effectuer des diagnostics
-
-## 🚀 Installation
-
-### Prérequis
-- Python 3.8 ou supérieur
-- pip (gestionnaire de paquets Python)
-- Tkinter (inclus avec Python sur la plupart des systèmes)
-
-### Étapes d'installation
-
-1. **Cloner ou télécharger le projet**
-   ```bash
-   git clone <url-du-repo>
-   cd gestia
-   ```
-
-2. **Créer un environnement virtuel (recommandé)**
-   ```bash
-   python -m venv venv
-   
-   # Windows
-   venv\Scripts\activate
-   
-   # Linux/Mac
-   source venv/bin/activate
-   ```
-
-3. **Installer les dépendances**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-## 🖥️ Lancement de l'application
-
-### Option 1 : Lanceur principal (recommandé)
+### 1. Installation
 ```bash
+# Cloner le projet
+git clone <votre-repo>
+cd gestia
+
+# Installer les dépendances
+pip install -r requirements.txt
+```
+
+### 2. Configuration des environnements
+```bash
+# Voir l'environnement actuel
+python tools/manage_env.py status
+
+# Initialiser l'environnement de développement
+python tools/manage_env.py init --env development
+
+# Générer des données de test
+python tools/manage_env.py generate
+```
+
+### 3. Lancement
+```bash
+# Interface graphique
 python main.py
-```
-Puis choisissez :
-- **1** : Interface Graphique (Tkinter)
-- **2** : Interface Console
-- **3** : Démonstration automatique
 
-### Option 2 : Interface graphique directe
+# Ou via l'outil de gestion
+python tools/manage_env.py run
+```
+
+## 🛠️ Outils Disponibles
+
+### Gestion des environnements
 ```bash
-python gui_launcher.py
+python tools/manage_env.py status          # Voir l'environnement actuel
+python tools/manage_env.py switch --env production  # Changer d'environnement
+python tools/manage_env.py init --env test         # Initialiser un environnement
+python tools/manage_env.py generate               # Générer des données de test
 ```
 
-### Option 3 : Interface console directe
+### Exploration de la base de données
 ```bash
-python interface.py
+python tools/explore_db.py                 # Explorer la structure et les données
 ```
 
-### Option 4 : Démonstration
+### Gestion des données
 ```bash
-python demo.py
+python data/scripts/generate_test_data.py  # Générer des données de test
+python data/scripts/import_csv.py          # Importer depuis CSV
+python data/scripts/backup_manager.py      # Gérer les sauvegardes
 ```
 
-## 🖼️ Interface Graphique
+## 🧪 Tests
 
-L'interface graphique offre une expérience utilisateur moderne avec :
+```bash
+# Exécuter tous les tests
+python -m pytest tests/
 
-### Fonctionnalités disponibles :
-- **Tableau de bord** : Vue d'ensemble avec statistiques
-- **Gestion des appareils** : Création, consultation, modification d'état
-- **Gestion des techniciens** : Création et consultation
-- **Navigation intuitive** : Menu latéral avec icônes
+# Tests unitaires uniquement
+python -m pytest tests/unit/
 
-### Fonctionnalités en développement :
-- Sessions de test
-- Programmes de test
-- Critères de test
-- Diagnostics et réparations
-- Statistiques détaillées
+# Avec couverture de code
+python -m pytest tests/ --cov=src/gestia
+```
 
-### Utilisation de l'interface graphique :
-1. **Créer un appareil** : Cliquez sur "➕ Nouvel Appareil"
-2. **Consulter un appareil** : Double-cliquez sur un appareil dans la liste
-3. **Modifier l'état** : Dans les détails d'un appareil, cliquez sur "Modifier l'état"
-4. **Actualiser** : Cliquez sur "🔄 Actualiser" pour mettre à jour les données
+## 📋 Fonctionnalités
 
-## 📖 Interface Console
+### ✅ Gestion des Appareils
+- Enregistrement d'appareils (marque, modèle, date de réception)
+- Suivi des états (En Test, En Réparation, Reconditionné, En Vente, Irréparable)
+- Historique complet des modifications
 
-L'interface console propose 7 options principales :
+### ✅ Gestion des Techniciens
+- Enregistrement des techniciens
+- Attribution des sessions de test
+- Suivi des diagnostics et réparations
 
-1. **Gestion des Appareils**
-   - Créer un nouvel appareil
-   - Lister tous les appareils
-   - Consulter un appareil
-   - Modifier l'état d'un appareil
+### ✅ Sessions de Test
+- Création de sessions de test
+- Attribution d'appareils et techniciens
+- Programmes de test configurables
+- Critères de validation
 
-2. **Gestion des Techniciens**
-   - Créer un nouveau technicien
-   - Lister tous les techniciens
-   - Consulter un technicien
+### ✅ Diagnostics et Réparations
+- Enregistrement des problèmes
+- Suivi des actions de réparation
+- Résultats de réparation
 
-3. **Sessions de Test**
-   - Créer une nouvelle session
-   - Consulter une session
-   - Terminer une session
-
-4. **Programmes de Test**
-   - Créer un programme
-   - Lancer un programme
-   - Terminer un programme
-
-5. **Critères de Test**
-   - Créer un critère
-   - Valider un critère
-
-6. **Diagnostics et Réparations**
-   - Créer un diagnostic
-   - Terminer un diagnostic
-
-7. **Rapports et Statistiques**
-   - Afficher les statistiques générales
-
-### Workflow typique
-
-1. **Créer un technicien** (option 2 → 1)
-2. **Créer un appareil** (option 1 → 1)
-3. **Créer une session de test** (option 3 → 1)
-4. **Ajouter des programmes de test** (option 4 → 1)
-5. **Créer et valider des critères** (option 5)
-6. **Effectuer des diagnostics si nécessaire** (option 6)
-7. **Terminer la session** (option 3 → 3)
-
-## 🗃️ Base de données
-
-Le système utilise SQLite par défaut (fichier `gestia.db`). La base de données est créée automatiquement au premier lancement.
-
-### Structure des tables :
-- `appareils` : Informations sur les appareils
-- `techniciens` : Informations sur les techniciens
-- `sessions_de_test` : Sessions de test
-- `programmes_de_test` : Programmes de test
-- `criteres_de_test` : Critères de validation
-- `diagnostics_reparation` : Diagnostics et réparations
+### ✅ Environnements Multiples
+- **Développement** : Données de test, développement
+- **Test** : Tests automatisés, validation
+- **Production** : Données réelles, exploitation
 
 ## 🔧 Configuration
 
-### Changer la base de données
-Modifiez la ligne dans `database.py` :
-```python
-db_manager = DatabaseManager("sqlite:///votre_fichier.db")
-```
+### Variables d'environnement
+- `GESTIA_ENV` : Environnement actuel (development/test/production)
 
-### Utiliser PostgreSQL
-```python
-db_manager = DatabaseManager("postgresql://user:password@localhost/gestia")
-```
+### Bases de données
+- `data/gestia_dev.db` : Base de développement
+- `data/gestia_test.db` : Base de test
+- `data/gestia_prod.db` : Base de production
 
-## 📊 Fonctionnalités avancées
+## 📊 Statistiques
 
-### États des appareils
-- **En Test** : Appareil en cours de test
-- **En Réparation** : Appareil en réparation
-- **Reconditionné** : Appareil réparé et prêt
-- **En Vente** : Appareil disponible à la vente
-- **Irréparable** : Appareil non réparable
+Le système fournit des statistiques en temps réel :
+- Nombre total d'appareils par état
+- Répartition des techniciens
+- Sessions de test en cours
+- Diagnostics en cours
 
-### Programmes de test
-- **Rapide** : Test rapide
-- **Coton 90** : Test complet coton 90°
-- **Essorage** : Test d'essorage
+## 🔒 Sécurité
 
-### Critères de test
-- Verrouillage Porte
-- Vidange
-- Remplissage
-- Rotation
-- Chauffe
-- Essorage
-- Programme Terminé
-
-## 🐛 Dépannage
-
-### Erreur de base de données
-- Vérifiez les permissions d'écriture dans le répertoire
-- Supprimez le fichier `gestia.db` pour recréer la base
-
-### Erreur d'importation
-- Vérifiez que toutes les dépendances sont installées
-- Activez l'environnement virtuel
-
-### Erreur Tkinter
-- Sur Linux : `sudo apt-get install python3-tk`
-- Sur macOS : Tkinter est généralement inclus
-- Sur Windows : Tkinter est inclus avec Python
-
-### Interface graphique ne se lance pas
-- Vérifiez que Tkinter est installé
-- Utilisez l'interface console en attendant
-- Vérifiez les logs d'erreur
-
-## 📝 Licence
-
-Ce projet est fourni à des fins éducatives et de démonstration.
+- Les bases de données ne sont jamais commitées dans Git
+- Chaque environnement a sa propre base isolée
+- Sauvegardes automatiques disponibles
 
 ## 🤝 Contribution
 
-Les contributions sont les bienvenues ! N'hésitez pas à :
-- Signaler des bugs
-- Proposer des améliorations
-- Ajouter de nouvelles fonctionnalités
-- Améliorer l'interface graphique
+1. Fork le projet
+2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
+3. Commit les changements (`git commit -m 'Add AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
 
-## 🚀 Roadmap
+## 📝 Licence
 
-### Prochaines fonctionnalités :
-- [ ] Interface complète pour les sessions de test
-- [ ] Interface pour les programmes de test
-- [ ] Interface pour les critères de test
-- [ ] Interface pour les diagnostics
-- [ ] Graphiques et statistiques avancées
-- [ ] Export de données (PDF, Excel)
-- [ ] Système de notifications
-- [ ] Interface web (Flask/FastAPI)
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+
+## 🆘 Support
+
+Pour toute question ou problème :
+1. Consulter la documentation dans `docs/`
+2. Vérifier les issues existantes
+3. Créer une nouvelle issue avec les détails du problème
 
 ---
 
-**Développé avec ❤️ pour la gestion d'appareils** 
+**GESTIA** - Simplifiez la gestion de vos appareils électroménagers ! 🏭✨ 
