@@ -55,6 +55,12 @@ class AppareilService:
             db.commit()
             return True
         return False
+    
+    @staticmethod
+    def lister_marques(db: Session) -> List[str]:
+        """Liste toutes les marques distinctes d'appareils"""
+        marques = db.query(Appareil.Marque).distinct().all()
+        return sorted([marque[0] for marque in marques])
 
 class TechnicienService:
     @staticmethod

@@ -21,6 +21,65 @@ from ..core.models import (
 )
 import threading
 
+class TreeviewSortable(ttk.Treeview):
+    """Treeview avec fonctionnalité de tri par colonnes"""
+    
+    def __init__(self, parent, **kwargs):
+        super().__init__(parent, **kwargs)
+        self.sort_column = None
+        self.sort_reverse = False
+        
+        # Bind le double-clic sur les en-têtes pour le tri
+        self.bind('<Double-1>', self._on_double_click_header)
+    
+    def _on_double_click_header(self, event):
+        """Gère le double-clic sur les en-têtes pour trier"""
+        region = self.identify_region(event.x, event.y)
+        if region == "heading":
+            column = self.identify_column(event.x)
+            column_id = self.heading(column)['text']
+            self.sort_by_column(column_id)
+    
+    def sort_by_column(self, column_id):
+        """Trie le Treeview par la colonne spécifiée"""
+        # Récupérer tous les éléments
+        items = [(self.set(item, column_id), item) for item in self.get_children('')]
+        
+        # Déterminer si on inverse le tri
+        if self.sort_column == column_id:
+            self.sort_reverse = not self.sort_reverse
+        else:
+            self.sort_reverse = False
+        
+        self.sort_column = column_id
+        
+        # Trier les éléments
+        items.sort(reverse=self.sort_reverse)
+        
+        # Réorganiser les éléments dans le Treeview
+        for index, (val, item) in enumerate(items):
+            self.move(item, '', index)
+        
+        # Mettre à jour l'apparence de l'en-tête pour indiquer le tri
+        self._update_header_appearance(column_id)
+    
+    def _update_header_appearance(self, column_id):
+        """Met à jour l'apparence des en-têtes pour indiquer le tri"""
+        # Réinitialiser tous les en-têtes
+        for col in self['columns']:
+            current_text = self.heading(col)['text']
+            # Enlever les indicateurs de tri existants
+            if current_text.endswith(' ↑') or current_text.endswith(' ↓'):
+                current_text = current_text[:-2]
+            self.heading(col, text=current_text)
+        
+        # Ajouter l'indicateur de tri à la colonne active
+        current_text = self.heading(column_id)['text']
+        if self.sort_reverse:
+            self.heading(column_id, text=f"{current_text} ↓")
+        else:
+            self.heading(column_id, text=f"{current_text} ↑")
+
 class GestiaGUI:
     def __init__(self):
         self.root = tk.Tk()
@@ -174,7 +233,7 @@ class GestiaGUI:
         
         # Treeview pour la liste des appareils
         columns = ('ID', 'Marque', 'Modèle', 'Date Réception', 'État', 'Date Vente')
-        tree = ttk.Treeview(self.content_frame, columns=columns, show='headings', height=15)
+        tree = TreeviewSortable(self.content_frame, columns=columns, show='headings', height=15)
         
         # Configuration des colonnes
         for col in columns:
@@ -226,7 +285,7 @@ class GestiaGUI:
         """Interface pour créer un nouvel appareil"""
         dialog = tk.Toplevel(self.root)
         dialog.title("Nouvel Appareil")
-        dialog.geometry("400x300")
+        dialog.geometry("450x350")
         dialog.transient(self.root)
         dialog.grab_set()
         
@@ -235,27 +294,89 @@ class GestiaGUI:
         modele_var = tk.StringVar()
         date_var = tk.StringVar(value=date.today().strftime('%Y-%m-%d'))
         
+        # Récupérer les marques existantes
+        try:
+            marques_existantes = AppareilService.lister_marques(self.db)
+        except Exception as e:
+            marques_existantes = []
+            print(f"Erreur lors du chargement des marques: {e}")
+        
+        # Ajouter une option pour nouvelle marque
+        marques_combobox = [''] + marques_existantes + ['--- Nouvelle marque ---']
+        
         # Interface
-        ttk.Label(dialog, text="Marque:").grid(row=0, column=0, padx=10, pady=10, sticky=tk.W)
-        ttk.Entry(dialog, textvariable=marque_var, width=30).grid(row=0, column=1, padx=10, pady=10)
+        ttk.Label(dialog, text="Marque:", font=('Arial', 10, 'bold')).grid(row=0, column=0, padx=10, pady=10, sticky=tk.W)
         
-        ttk.Label(dialog, text="Modèle:").grid(row=1, column=0, padx=10, pady=10, sticky=tk.W)
-        ttk.Entry(dialog, textvariable=modele_var, width=30).grid(row=1, column=1, padx=10, pady=10)
+        # Combobox pour les marques
+        marque_combobox = ttk.Combobox(dialog, textvariable=marque_var, values=marques_combobox, width=27, state="readonly")
+        marque_combobox.grid(row=0, column=1, padx=10, pady=10, sticky=tk.W)
         
-        ttk.Label(dialog, text="Date de réception:").grid(row=2, column=0, padx=10, pady=10, sticky=tk.W)
-        ttk.Entry(dialog, textvariable=date_var, width=30).grid(row=2, column=1, padx=10, pady=10)
+        # Entry pour nouvelle marque (caché par défaut)
+        nouvelle_marque_entry = ttk.Entry(dialog, width=30)
+        nouvelle_marque_entry.grid(row=0, column=1, padx=10, pady=10, sticky=tk.W)
+        nouvelle_marque_entry.grid_remove()  # Caché par défaut
+        
+        def on_marque_change(event):
+            """Gère le changement de sélection dans le combobox"""
+            selection = marque_var.get()
+            if selection == '--- Nouvelle marque ---':
+                # Afficher l'entry pour nouvelle marque
+                marque_combobox.grid_remove()
+                nouvelle_marque_entry.grid()
+                nouvelle_marque_entry.focus()
+                marque_var.set('')  # Vider la variable
+            elif selection == '':
+                # Retour au combobox normal
+                nouvelle_marque_entry.grid_remove()
+                marque_combobox.grid()
+        
+        marque_combobox.bind('<<ComboboxSelected>>', on_marque_change)
+        
+        # Label pour expliquer
+        ttk.Label(dialog, text="💡 Sélectionnez une marque existante ou 'Nouvelle marque'", 
+                 font=('Arial', 8), foreground='gray').grid(row=1, column=0, columnspan=2, padx=10, pady=(0, 10), sticky=tk.W)
+        
+        ttk.Label(dialog, text="Modèle:", font=('Arial', 10, 'bold')).grid(row=2, column=0, padx=10, pady=10, sticky=tk.W)
+        ttk.Entry(dialog, textvariable=modele_var, width=30).grid(row=2, column=1, padx=10, pady=10, sticky=tk.W)
+        
+        ttk.Label(dialog, text="Date de réception:", font=('Arial', 10, 'bold')).grid(row=3, column=0, padx=10, pady=10, sticky=tk.W)
+        ttk.Entry(dialog, textvariable=date_var, width=30).grid(row=3, column=1, padx=10, pady=10, sticky=tk.W)
         
         def valider():
             try:
+                # Récupérer la marque (depuis combobox ou entry)
+                marque = marque_var.get()
+                if marque == '--- Nouvelle marque ---' or marque == '':
+                    marque = nouvelle_marque_entry.get().strip()
+                
+                # Validation
+                if not marque:
+                    messagebox.showerror("Erreur", "Veuillez saisir une marque")
+                    return
+                
+                if not modele_var.get().strip():
+                    messagebox.showerror("Erreur", "Veuillez saisir un modèle")
+                    return
+                
+                # Créer l'appareil
                 date_rec = date.fromisoformat(date_var.get())
-                appareil = AppareilService.creer_appareil(self.db, marque_var.get(), modele_var.get(), date_rec)
+                appareil = AppareilService.creer_appareil(self.db, marque, modele_var.get().strip(), date_rec)
+                
                 messagebox.showinfo("Succès", f"Appareil créé avec l'ID: {appareil.ID_Appareil}")
                 self.refresh_appareils()
                 dialog.destroy()
+                
+            except ValueError as e:
+                messagebox.showerror("Erreur", f"Date invalide. Format attendu: YYYY-MM-DD")
             except Exception as e:
                 messagebox.showerror("Erreur", f"Erreur lors de la création: {e}")
         
-        ttk.Button(dialog, text="Créer", command=valider, style='Success.TButton').grid(row=3, column=0, columnspan=2, pady=20)
+        # Frame pour les boutons
+        button_frame = ttk.Frame(dialog)
+        button_frame.grid(row=4, column=0, columnspan=2, pady=20)
+        
+        ttk.Button(button_frame, text="Créer", command=valider, style='Success.TButton').pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="Annuler", command=dialog.destroy, style='Info.TButton').pack(side=tk.LEFT, padx=5)
     
     def consulter_appareil_gui(self, event):
         """Interface pour consulter un appareil"""
@@ -347,7 +468,7 @@ class GestiaGUI:
         
         # Treeview pour la liste des techniciens
         columns = ('ID', 'Nom', 'Prénom')
-        tree = ttk.Treeview(self.content_frame, columns=columns, show='headings', height=15)
+        tree = TreeviewSortable(self.content_frame, columns=columns, show='headings', height=15)
         
         # Configuration des colonnes
         for col in columns:

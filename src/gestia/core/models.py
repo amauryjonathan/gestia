@@ -51,6 +51,14 @@ class Appareil(Base):
     ID_Appareil = Column(String(50), primary_key=True)
     Marque = Column(String(100), nullable=False)
     Modele = Column(String(100), nullable=False)
+    
+    # Nouveaux champs pour les références détaillées
+    Serie = Column(String(50), nullable=True)  # WW, DW, etc.
+    Capacite = Column(String(20), nullable=True)  # 9kg, 10kg, etc.
+    Technologie = Column(String(100), nullable=True)  # EcoBubble, Steam, etc.
+    Variante = Column(String(50), nullable=True)  # EF, BK, etc.
+    ReferenceComplete = Column(String(200), nullable=True)  # WW90T534DAW/EF
+    
     DateReception = Column(Date, nullable=False)
     Etat = Column(Enum(EtatAppareil), nullable=False, default=EtatAppareil.EN_TEST)
     DateMiseEnVente = Column(Date, nullable=True)
