@@ -9,11 +9,40 @@ Script principal pour gérer les environnements de développement, test et produ
 import os
 import sys
 import argparse
+import json
 from datetime import datetime
+
+CONFIG_FILE = "data/.env_config.json"
+
+def charger_environnement():
+    """Charge l'environnement depuis le fichier de configuration"""
+    try:
+        if os.path.exists(CONFIG_FILE):
+            with open(CONFIG_FILE, 'r') as f:
+                config = json.load(f)
+                env = config.get('environment', 'development')
+                os.environ['GESTIA_ENV'] = env
+                return env
+    except Exception as e:
+        print(f"⚠️ Erreur lors du chargement de la configuration : {e}")
+    return 'development'
+
+def sauvegarder_environnement(env):
+    """Sauvegarde l'environnement dans le fichier de configuration"""
+    try:
+        # Créer le dossier data s'il n'existe pas
+        os.makedirs('data', exist_ok=True)
+        
+        config = {'environment': env}
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump(config, f, indent=2)
+    except Exception as e:
+        print(f"⚠️ Erreur lors de la sauvegarde de la configuration : {e}")
 
 def afficher_environnement_actuel():
     """Affiche l'environnement actuel"""
-    env = os.getenv('GESTIA_ENV', 'development')
+    # Charger l'environnement depuis la configuration
+    env = charger_environnement()
     print(f"🎯 Environnement actuel : {env}")
     
     # Afficher le chemin de la base de données
@@ -36,9 +65,11 @@ def afficher_environnement_actuel():
         print(f"📁 Base de données : {db_path} (n'existe pas encore)")
 
 def changer_environnement(env):
-    """Change l'environnement actuel"""
+    """Change l'environnement actuel et le sauvegarde"""
     os.environ['GESTIA_ENV'] = env
+    sauvegarder_environnement(env)
     print(f"🔄 Environnement changé vers : {env}")
+    print(f"💾 Configuration sauvegardée dans : {CONFIG_FILE}")
     afficher_environnement_actuel()
 
 def initialiser_environnement(env):

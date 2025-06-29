@@ -4,6 +4,9 @@ gestia.db
 data/*.db
 data/backups/*.db
 
+# Configuration d'environnement - Ne jamais commiter !
+data/.env_config.json
+
 # Fichiers de cache Python
 __pycache__/
 *.py[cod]
