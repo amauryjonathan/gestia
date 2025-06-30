@@ -129,49 +129,99 @@ de votre application GESTIA.
 🛠️ COMMANDES DISPONIBLES :
 
 1. Afficher l'environnement actuel :
-   python manage_env.py status
+   python tools/manage_env.py status
 
 2. Changer d'environnement :
-   python manage_env.py switch --env development
-   python manage_env.py switch --env production
-   python manage_env.py switch --env test
+   python tools/manage_env.py switch --env development
+   python tools/manage_env.py switch --env production
+   python tools/manage_env.py switch --env test
 
 3. Initialiser un nouvel environnement :
-   python manage_env.py init --env development
-   python manage_env.py init --env production
-   python manage_env.py init --env test
+   python tools/manage_env.py init --env development
+   python tools/manage_env.py init --env production
+   python tools/manage_env.py init --env test
 
-4. Générer des données de test :
-   python manage_env.py generate
+4. Migrer la base de données :
+   python tools/manage_env.py migrate --env development
+   python tools/manage_env.py migrate --env production
 
-5. Lancer l'application :
-   python manage_env.py run
+5. Vérifier le statut des migrations :
+   python tools/manage_env.py migrate-status --env development
 
-6. Afficher cette aide :
-   python manage_env.py help
+6. Réinitialiser complètement un environnement :
+   python tools/manage_env.py reset --env development --force
+
+7. Générer des données de test :
+   python tools/manage_env.py generate
+
+8. Lancer l'application :
+   python tools/manage_env.py run
+
+9. Afficher cette aide :
+   python tools/manage_env.py help
 
 📁 STRUCTURE DES DONNÉES :
-- data/gestia_dev.db     : Base de développement
-- data/gestia_prod.db    : Base de production
-- data/gestia_test.db    : Base de test
-- data/backups/          : Sauvegardes
-- data/scripts/          : Scripts utilitaires
-- data/samples/          : Données d'exemple
+- data/development/gestia.db  : Base de développement
+- data/production/gestia.db   : Base de production
+- data/test/gestia.db         : Base de test
+- data/backups/               : Sauvegardes
+- data/scripts/               : Scripts utilitaires
+- data/samples/               : Données d'exemple
 
 ⚠️ RECOMMANDATIONS :
 - Utilisez 'development' pour vos tests et développements
 - Utilisez 'production' uniquement pour les vraies données
 - Faites des sauvegardes régulières de la production
 - Ne commitez jamais les fichiers .db dans Git
+- Utilisez 'migrate' pour mettre à jour le schéma de base
+- Utilisez 'reset' avec précaution (supprime toutes les données)
 """)
+
+def migrer_base_donnees(env):
+    """Migre la base de données vers le schéma le plus récent"""
+    print(f"🔄 Migration de la base de données pour l'environnement '{env}'...")
+    
+    try:
+        from migrate_db import DatabaseMigrator
+        migrator = DatabaseMigrator(env)
+        migrator.migrate()
+        print(f"✅ Migration terminée avec succès pour l'environnement '{env}'")
+    except Exception as e:
+        print(f"❌ Erreur lors de la migration : {e}")
+
+def afficher_statut_migrations(env):
+    """Affiche le statut des migrations"""
+    try:
+        from migrate_db import DatabaseMigrator
+        migrator = DatabaseMigrator(env)
+        migrator.show_status()
+    except Exception as e:
+        print(f"❌ Erreur lors de la vérification du statut : {e}")
+
+def reinitialiser_environnement(env, force=False):
+    """Réinitialise complètement un environnement"""
+    print(f"🔄 Réinitialisation complète de l'environnement '{env}'...")
+    
+    try:
+        from init_db import init_environment
+        if init_environment(env, force):
+            print(f"✅ Environnement '{env}' réinitialisé avec succès !")
+        else:
+            print(f"❌ Réinitialisation annulée pour l'environnement '{env}'")
+    except Exception as e:
+        print(f"❌ Erreur lors de la réinitialisation : {e}")
 
 def main():
     """Fonction principale"""
     parser = argparse.ArgumentParser(description="Gestionnaire d'environnements GESTIA")
-    parser.add_argument('action', choices=['status', 'switch', 'init', 'generate', 'run', 'help'],
+    parser.add_argument('action', 
+                       choices=['status', 'switch', 'init', 'migrate', 'migrate-status', 
+                               'reset', 'generate', 'run', 'help'],
                        help='Action à effectuer')
     parser.add_argument('--env', choices=['development', 'production', 'test'],
                        help='Environnement cible')
+    parser.add_argument('--force', action='store_true',
+                       help='Forcer l\'action (pour reset)')
     
     args = parser.parse_args()
     
@@ -189,6 +239,24 @@ def main():
             print("❌ Veuillez spécifier l'environnement avec --env")
             return
         initialiser_environnement(args.env)
+    
+    elif args.action == 'migrate':
+        if not args.env:
+            print("❌ Veuillez spécifier l'environnement avec --env")
+            return
+        migrer_base_donnees(args.env)
+    
+    elif args.action == 'migrate-status':
+        if not args.env:
+            print("❌ Veuillez spécifier l'environnement avec --env")
+            return
+        afficher_statut_migrations(args.env)
+    
+    elif args.action == 'reset':
+        if not args.env:
+            print("❌ Veuillez spécifier l'environnement avec --env")
+            return
+        reinitialiser_environnement(args.env, args.force)
     
     elif args.action == 'generate':
         generer_donnees_test()
