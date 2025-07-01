@@ -14,6 +14,11 @@ class EtatAppareil(enum.Enum):
     EN_VENTE = "En Vente"
     IRREPARABLE = "Irréparable"
 
+class Technologie(enum.Enum):
+    DIRECT_DRIVE = "Direct-Drive"
+    INVERTER = "Inverter"
+    UNIVERSAL = "Universal"
+
 class ResultatSession(enum.Enum):
     PASSE = "Passé"
     ECHOUÉ = "Échoué"
@@ -51,17 +56,17 @@ class Appareil(Base):
     ID_Appareil = Column(String(50), primary_key=True)
     Marque = Column(String(100), nullable=False)
     Modele = Column(String(100), nullable=False)
-    
-    # Nouveaux champs pour les références détaillées
-    Serie = Column(String(50), nullable=True)  # WW, DW, etc.
+    NumeroSerie = Column(String(100), nullable=False)  # Numéro de série obligatoire
     Capacite = Column(String(20), nullable=True)  # 9kg, 10kg, etc.
-    Technologie = Column(String(100), nullable=True)  # EcoBubble, Steam, etc.
-    Variante = Column(String(50), nullable=True)  # EF, BK, etc.
-    ReferenceComplete = Column(String(200), nullable=True)  # WW90T534DAW/EF
+    Technologie = Column(Enum(Technologie), nullable=True)  # Direct-Drive, Inverter, Universal
     
     DateReception = Column(Date, nullable=False)
     Etat = Column(Enum(EtatAppareil), nullable=False, default=EtatAppareil.EN_TEST)
     DateMiseEnVente = Column(Date, nullable=True)
+    
+    # Nouveaux champs pour les actions et soucis
+    ActionsAFaire = Column(Text, nullable=True)  # Actions à faire pour cet appareil
+    SoucisMachine = Column(Text, nullable=True)  # Problèmes identifiés sur la machine
     
     # Relations
     sessions = relationship("SessionDeTest", back_populates="appareil")

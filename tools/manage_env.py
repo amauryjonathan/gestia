@@ -93,11 +93,23 @@ def generer_donnees_test():
     """Génère des données de test pour l'environnement actuel"""
     print("🎲 Génération de données de test...")
     
-    # Importer et exécuter le script de génération
-    sys.path.insert(0, 'src')
+    # Exécuter le script de génération directement
     try:
-        from data.scripts.generate_test_data import generer_donnees_test
-        generer_donnees_test()
+        import subprocess
+        import os
+        
+        # Obtenir le chemin du script de génération
+        script_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'scripts', 'generate_test_data.py')
+        
+        # Exécuter le script
+        result = subprocess.run([sys.executable, script_path], 
+                              capture_output=True, text=True, cwd=os.path.dirname(os.path.dirname(__file__)))
+        
+        if result.returncode == 0:
+            print(result.stdout)
+        else:
+            print(f"❌ Erreur lors de la génération : {result.stderr}")
+            
     except Exception as e:
         print(f"❌ Erreur lors de la génération : {e}")
 

@@ -20,12 +20,13 @@ from .models import (
 
 class AppareilService:
     @staticmethod
-    def creer_appareil(db: Session, marque: str, modele: str, date_reception: date) -> Appareil:
+    def creer_appareil(db: Session, marque: str, modele: str, numero_serie: str, date_reception: date) -> Appareil:
         """Crée un nouvel appareil"""
         appareil = Appareil(
             ID_Appareil=f"APP_{uuid.uuid4().hex[:8].upper()}",
             Marque=marque,
             Modele=modele,
+            NumeroSerie=numero_serie,
             DateReception=date_reception,
             Etat=EtatAppareil.EN_TEST
         )
@@ -61,6 +62,78 @@ class AppareilService:
         """Liste toutes les marques distinctes d'appareils"""
         marques = db.query(Appareil.Marque).distinct().all()
         return sorted([marque[0] for marque in marques])
+    
+    @staticmethod
+    def obtenir_sessions_test(db: Session, id_appareil: str) -> List[SessionDeTest]:
+        """Récupère toutes les sessions de test d'un appareil"""
+        return db.query(SessionDeTest).filter(SessionDeTest.ID_Appareil == id_appareil).order_by(SessionDeTest.DateDebut.desc()).all()
+    
+    @staticmethod
+    def obtenir_diagnostics(db: Session, id_appareil: str) -> List[DiagnosticReparation]:
+        """Récupère tous les diagnostics d'un appareil"""
+        return db.query(DiagnosticReparation).filter(DiagnosticReparation.ID_Appareil == id_appareil).order_by(DiagnosticReparation.DateDebut.desc()).all()
+    
+    @staticmethod
+    def obtenir_recapitulatif_appareil(db: Session, id_appareil: str) -> dict:
+        """Récupère un récapitulatif complet d'un appareil avec ses tests et diagnostics"""
+        appareil = AppareilService.obtenir_appareil(db, id_appareil)
+        if not appareil:
+            return None
+        
+        sessions = AppareilService.obtenir_sessions_test(db, id_appareil)
+        diagnostics = AppareilService.obtenir_diagnostics(db, id_appareil)
+        
+        # Statistiques des sessions
+        total_sessions = len(sessions)
+        sessions_reussies = len([s for s in sessions if s.ResultatFinal == ResultatSession.PASSE])
+        sessions_echouees = len([s for s in sessions if s.ResultatFinal == ResultatSession.ECHOUÉ])
+        sessions_en_cours = len([s for s in sessions if s.ResultatFinal == ResultatSession.EN_COURS])
+        
+        # Statistiques des diagnostics
+        total_diagnostics = len(diagnostics)
+        diagnostics_reussis = len([d for d in diagnostics if d.ResultatReparation == ResultatReparation.REUSSI])
+        diagnostics_echoues = len([d for d in diagnostics if d.ResultatReparation == ResultatReparation.ECHOUÉ_IRREPARABLE])
+        diagnostics_en_cours = len([d for d in diagnostics if d.ResultatReparation is None])
+        
+        return {
+            'appareil': appareil,
+            'sessions': sessions,
+            'diagnostics': diagnostics,
+            'statistiques': {
+                'sessions': {
+                    'total': total_sessions,
+                    'reussies': sessions_reussies,
+                    'echouees': sessions_echouees,
+                    'en_cours': sessions_en_cours
+                },
+                'diagnostics': {
+                    'total': total_diagnostics,
+                    'reussis': diagnostics_reussis,
+                    'echoues': diagnostics_echoues,
+                    'en_cours': diagnostics_en_cours
+                }
+            }
+        }
+    
+    @staticmethod
+    def mettre_a_jour_actions_a_faire(db: Session, id_appareil: str, actions: str) -> bool:
+        """Met à jour les actions à faire pour un appareil"""
+        appareil = AppareilService.obtenir_appareil(db, id_appareil)
+        if appareil:
+            appareil.ActionsAFaire = actions
+            db.commit()
+            return True
+        return False
+    
+    @staticmethod
+    def mettre_a_jour_problemes_identifies(db: Session, id_appareil: str, problemes: str) -> bool:
+        """Met à jour les problèmes identifiés pour un appareil"""
+        appareil = AppareilService.obtenir_appareil(db, id_appareil)
+        if appareil:
+            appareil.SoucisMachine = problemes
+            db.commit()
+            return True
+        return False
 
 class TechnicienService:
     @staticmethod

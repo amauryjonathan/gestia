@@ -78,6 +78,23 @@ python data/scripts/import_csv.py          # Importer depuis CSV
 python data/scripts/backup_manager.py      # Gérer les sauvegardes
 ```
 
+### Génération de données par environnement
+```bash
+# Générer des données pour l'environnement de développement
+python tools/manage_env.py switch --env development
+python tools/manage_env.py generate
+
+# Générer des données pour l'environnement de test
+python tools/manage_env.py switch --env test
+python tools/manage_env.py generate
+
+# Générer des données pour l'environnement de production
+python tools/manage_env.py switch --env production
+python tools/manage_env.py generate
+
+# Note : Le script direct generate_test_data.py génère uniquement pour development
+```
+
 ## 💾 Sauvegarde des Bases de Données
 
 ### Sauvegarde manuelle par environnement
@@ -224,3 +241,11 @@ Pour toute question ou problème :
 ---
 
 **GESTIA** - Simplifiez la gestion de vos appareils électroménagers ! 🏭✨ 
+
+```
+import sys
+if sys.platform.startswith('win'):
+    import os
+    if os.environ.get('PYTHONIOENCODING') != 'utf-8':
+        print("Veuillez lancer la console avec l'encodage UTF-8 (chcp 65001) ou définir PYTHONIOENCODING=utf-8")
+        sys.exit(1) 
