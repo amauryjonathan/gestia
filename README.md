@@ -78,6 +78,65 @@ python data/scripts/import_csv.py          # Importer depuis CSV
 python data/scripts/backup_manager.py      # Gérer les sauvegardes
 ```
 
+## 💾 Sauvegarde des Bases de Données
+
+### Sauvegarde manuelle par environnement
+```bash
+# Sauvegarder l'environnement de développement
+python data/scripts/backup_manager.py --env development --backup
+
+# Sauvegarder l'environnement de test
+python data/scripts/backup_manager.py --env test --backup
+
+# Sauvegarder l'environnement de production
+python data/scripts/backup_manager.py --env production --backup
+
+# Sauvegarder tous les environnements
+python data/scripts/backup_manager.py --all --backup
+```
+
+### Restauration d'une sauvegarde
+```bash
+# Restaurer une sauvegarde spécifique
+python data/scripts/backup_manager.py --env development --restore --file backup_2024-01-15_14-30-00.db
+
+# Restaurer la sauvegarde la plus récente
+python data/scripts/backup_manager.py --env production --restore --latest
+```
+
+### Gestion des sauvegardes
+```bash
+# Lister toutes les sauvegardes disponibles
+python data/scripts/backup_manager.py --list
+
+# Lister les sauvegardes d'un environnement spécifique
+python data/scripts/backup_manager.py --env development --list
+
+# Nettoyer les anciennes sauvegardes (garde les 10 plus récentes)
+python data/scripts/backup_manager.py --cleanup --keep 10
+```
+
+### Sauvegarde automatique
+```bash
+# Configurer une sauvegarde automatique quotidienne
+python data/scripts/backup_manager.py --schedule --daily --env production
+
+# Configurer une sauvegarde automatique hebdomadaire
+python data/scripts/backup_manager.py --schedule --weekly --env all
+```
+
+### Emplacement des sauvegardes
+- **Développement** : `data/backups/development/`
+- **Test** : `data/backups/test/`
+- **Production** : `data/backups/production/`
+
+### Format des noms de fichiers
+Les sauvegardes sont nommées avec le format :
+```
+backup_[ENVIRONNEMENT]_[DATE]_[HEURE].db
+Exemple : backup_production_2024-01-15_14-30-00.db
+```
+
 ## 🧪 Tests
 
 ```bash
