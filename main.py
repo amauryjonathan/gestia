@@ -30,6 +30,29 @@ def main():
     print("=" * 50)
     print("Initialisation en cours...")
     
+    # 🔄 VÉRIFICATION ET APPLICATION DES MIGRATIONS
+    try:
+        from gestia.core.migration_manager import auto_migrate_on_startup
+        print("\n🔍 Vérification de la base de données...")
+        
+        # Détecter l'environnement (par défaut development)
+        environment = os.getenv('GESTIA_ENV', 'development')
+        
+        # Vérifier et appliquer les migrations si nécessaire
+        migrations_applied = auto_migrate_on_startup(environment, verbose=True)
+        
+        if migrations_applied:
+            print("✅ Base de données mise à jour avec succès !")
+        else:
+            print("✅ Base de données déjà à jour")
+            
+    except Exception as e:
+        print(f"⚠️  Attention: Erreur lors de la vérification des migrations: {e}")
+        print("   L'application va continuer mais des erreurs peuvent survenir.")
+        print("   Considérez exécuter manuellement: python tools/tools/db/migrate_db.py migrate --env development")
+    
+    print("\n" + "=" * 50)
+    
     # Vérifier si tkinter est disponible
     try:
         import tkinter

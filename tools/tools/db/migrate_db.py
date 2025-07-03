@@ -12,7 +12,10 @@ import sqlite3
 from datetime import datetime
 
 # Ajouter le répertoire src au path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.join(current_dir, '..', '..', '..')
+src_path = os.path.join(project_root, 'src')
+sys.path.insert(0, src_path)
 
 from gestia.core.database import db_manager, set_environment
 
@@ -91,15 +94,9 @@ class DatabaseMigrator:
         finally:
             conn.close()
     
-    def migrate(self):
-        """Exécute toutes les migrations nécessaires"""
-        print(f"🚀 Début des migrations pour l'environnement: {self.environment}")
-        print("=" * 60)
-        
-        applied_migrations = self.get_applied_migrations()
-        
-        # Définir toutes les migrations
-        migrations = [
+    def get_all_migrations(self):
+        """Retourne toutes les migrations définies dans l'ordre"""
+        return [
             {
                 'version': '001_add_samsung_fields',
                 'description': 'Ajout des champs pour références Samsung',
@@ -117,11 +114,39 @@ class DatabaseMigrator:
                 'sql': [
                     'ALTER TABLE appareils ADD COLUMN Label TEXT'
                 ]
+            },
+            {
+                'version': '003_add_test_diagnostic_fields',
+                'description': 'Ajout des champs pour tests et diagnostics',
+                'sql': [
+                    'ALTER TABLE appareils ADD COLUMN ActionsAFaire TEXT',
+                    'ALTER TABLE appareils ADD COLUMN SoucisMachine TEXT'
+                ]
+            },
+            {
+                'version': '004_add_numero_serie_field',
+                'description': 'Ajout du champ NumeroSerie obligatoire',
+                'sql': [
+                    'ALTER TABLE appareils ADD COLUMN NumeroSerie TEXT'
+                ]
             }
+            # 🚀 POUR AJOUTER UNE NOUVELLE MIGRATION :
+            # Ajoutez ici un nouveau dictionnaire avec :
+            # - version: '005_nom_de_la_migration'
+            # - description: 'Description claire de ce que fait la migration'
+            # - sql: [liste des commandes SQL à exécuter]
         ]
+    
+    def migrate(self):
+        """Exécute toutes les migrations nécessaires"""
+        print(f"🚀 Début des migrations pour l'environnement: {self.environment}")
+        print("=" * 60)
+        
+        applied_migrations = self.get_applied_migrations()
+        all_migrations = self.get_all_migrations()
         
         # Exécuter les migrations non appliquées
-        for migration in migrations:
+        for migration in all_migrations:
             if migration['version'] not in applied_migrations:
                 self.run_migration(
                     migration['version'],
@@ -140,27 +165,47 @@ class DatabaseMigrator:
         print("=" * 60)
         
         applied_migrations = self.get_applied_migrations()
+        all_migrations = self.get_all_migrations()
         
-        if applied_migrations:
-            print("Migrations appliquées:")
-            for migration in applied_migrations:
-                print(f"  ✅ {migration}")
-        else:
-            print("Aucune migration appliquée")
+        print("Migrations disponibles:")
+        for migration in all_migrations:
+            status = "✅" if migration['version'] in applied_migrations else "⏳"
+            print(f"  {status} {migration['version']}: {migration['description']}")
         
         print(f"\nBase de données: {self.db_path}")
         print(f"Existe: {'✅' if os.path.exists(self.db_path) else '❌'}")
+    
+    def create_migration(self, version, description, sql_commands):
+        """Crée une nouvelle migration (utilitaire pour développeurs)"""
+        print(f"📝 Création d'une nouvelle migration: {version}")
+        print(f"Description: {description}")
+        print("Commandes SQL:")
+        for cmd in sql_commands:
+            print(f"  - {cmd}")
+        
+        # Ajouter la migration à la liste
+        new_migration = {
+            'version': version,
+            'description': description,
+            'sql': sql_commands
+        }
+        
+        print("\n⚠️  Pour appliquer cette migration, ajoutez-la dans la méthode get_all_migrations()")
+        print("   puis exécutez: python tools/tools/db/migrate_db.py migrate")
 
 def main():
     """Point d'entrée principal"""
     import argparse
     
     parser = argparse.ArgumentParser(description="Gestionnaire de migrations GESTIA")
-    parser.add_argument('action', choices=['migrate', 'status'], 
+    parser.add_argument('action', choices=['migrate', 'status', 'create'], 
                        help='Action à effectuer')
     parser.add_argument('--env', default='development', 
                        choices=['development', 'test', 'production'],
                        help='Environnement cible')
+    parser.add_argument('--version', help='Version de la migration (pour create)')
+    parser.add_argument('--description', help='Description de la migration (pour create)')
+    parser.add_argument('--sql', nargs='+', help='Commandes SQL (pour create)')
     
     args = parser.parse_args()
     
@@ -170,6 +215,11 @@ def main():
         migrator.migrate()
     elif args.action == 'status':
         migrator.show_status()
+    elif args.action == 'create':
+        if not all([args.version, args.description, args.sql]):
+            print("❌ Pour créer une migration, spécifiez --version, --description et --sql")
+            return
+        migrator.create_migration(args.version, args.description, args.sql)
 
 if __name__ == "__main__":
     main() 
