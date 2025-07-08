@@ -13,9 +13,18 @@ import sqlite3
 from datetime import datetime
 
 # Ajouter le répertoire tools au path pour importer le migrator
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'tools', 'tools', 'db'))
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.join(current_dir, '..', '..', '..')
+tools_path = os.path.join(project_root, 'tools', 'tools', 'db')
+sys.path.insert(0, tools_path)
 
-from migrate_db import DatabaseMigrator
+try:
+    from migrate_db import DatabaseMigrator
+except ImportError as e:
+    print(f"❌ Erreur d'import du module de migration: {e}")
+    print(f"   Chemin recherché: {tools_path}")
+    print("   Vérifiez que le fichier migrate_db.py existe dans tools/tools/db/")
+    raise
 
 class MigrationManager:
     """Gestionnaire de migrations automatique pour GESTIA"""

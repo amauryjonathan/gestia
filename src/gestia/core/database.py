@@ -12,14 +12,15 @@ class DatabaseManager:
             # Créer le dossier data s'il n'existe pas
             os.makedirs('data', exist_ok=True)
             
+            # CORRECTION : Utiliser la même structure de chemins que les migrations
             if env == 'development':
-                db_url = "sqlite:///data/gestia_dev.db"
+                db_url = "sqlite:///data/development/gestia.db"
             elif env == 'production':
-                db_url = "sqlite:///data/gestia_prod.db"
+                db_url = "sqlite:///data/production/gestia.db"
             elif env == 'test':
-                db_url = "sqlite:///data/gestia_test.db"
+                db_url = "sqlite:///data/test/gestia.db"
             else:
-                db_url = "sqlite:///data/gestia_dev.db"
+                db_url = "sqlite:///data/development/gestia.db"
         
         self.engine = create_engine(db_url, echo=True)
         self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
