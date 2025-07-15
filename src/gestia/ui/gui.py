@@ -283,7 +283,7 @@ class GestiaGUI:
                         app.ID_Appareil,
                         app.Marque,
                         app.Modele,
-                        app.NumeroSerie,
+                        app.NumSerie,
                         app.DateReception.strftime('%d/%m/%Y'),
                         app.Etat.value,
                         app.DateMiseEnVente.strftime('%d/%m/%Y') if app.DateMiseEnVente else '-'
@@ -302,7 +302,7 @@ class GestiaGUI:
         # Variables
         marque_var = tk.StringVar()
         modele_var = tk.StringVar()
-        numero_serie_var = tk.StringVar()
+        num_serie_var = tk.StringVar()
         date_var = tk.StringVar(value=date.today().strftime('%Y-%m-%d'))
         
         # Récupérer les marques existantes
@@ -351,7 +351,7 @@ class GestiaGUI:
         ttk.Entry(dialog, textvariable=modele_var, width=30).grid(row=2, column=1, padx=10, pady=10, sticky=tk.W)
         
         ttk.Label(dialog, text="Numéro de série:", font=('Arial', 10, 'bold')).grid(row=3, column=0, padx=10, pady=10, sticky=tk.W)
-        ttk.Entry(dialog, textvariable=numero_serie_var, width=30).grid(row=3, column=1, padx=10, pady=10, sticky=tk.W)
+        ttk.Entry(dialog, textvariable=num_serie_var, width=30).grid(row=3, column=1, padx=10, pady=10, sticky=tk.W)
         
         ttk.Label(dialog, text="Date de réception:", font=('Arial', 10, 'bold')).grid(row=4, column=0, padx=10, pady=10, sticky=tk.W)
         ttk.Entry(dialog, textvariable=date_var, width=30).grid(row=4, column=1, padx=10, pady=10, sticky=tk.W)
@@ -372,13 +372,13 @@ class GestiaGUI:
                     messagebox.showerror("Erreur", "Veuillez saisir un modèle")
                     return
                 
-                if not numero_serie_var.get().strip():
+                if not num_serie_var.get().strip():
                     messagebox.showerror("Erreur", "Veuillez saisir un numéro de série")
                     return
                 
                 # Créer l'appareil
                 date_rec = date.fromisoformat(date_var.get())
-                appareil = AppareilService.creer_appareil(self.db, marque, modele_var.get().strip(), numero_serie_var.get().strip(), date_rec)
+                appareil = AppareilService.creer_appareil(self.db, marque, modele_var.get().strip(), num_serie_var.get().strip(), date_rec)
                 
                 messagebox.showinfo("Succès", f"Appareil créé avec l'ID: {appareil.ID_Appareil}")
                 self.refresh_appareils()
@@ -439,7 +439,7 @@ class GestiaGUI:
             ttk.Label(info_frame, text=f"ID: {appareil.ID_Appareil}", font=('Arial', 12, 'bold')).pack(anchor=tk.W)
             ttk.Label(info_frame, text=f"Marque: {appareil.Marque}").pack(anchor=tk.W, pady=2)
             ttk.Label(info_frame, text=f"Modèle: {appareil.Modele}").pack(anchor=tk.W, pady=2)
-            ttk.Label(info_frame, text=f"Numéro de série: {appareil.NumeroSerie}").pack(anchor=tk.W, pady=2)
+            ttk.Label(info_frame, text=f"Numéro de série: {appareil.NumSerie}").pack(anchor=tk.W, pady=2)
             ttk.Label(info_frame, text=f"Capacité: {appareil.Capacite or 'Non spécifiée'}").pack(anchor=tk.W, pady=2)
             ttk.Label(info_frame, text=f"Technologie: {appareil.Technologie.value if appareil.Technologie else 'Non spécifiée'}").pack(anchor=tk.W, pady=2)
             ttk.Label(info_frame, text=f"Date de réception: {appareil.DateReception}").pack(anchor=tk.W, pady=2)

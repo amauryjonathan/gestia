@@ -56,7 +56,7 @@ class Appareil(Base):
     ID_Appareil = Column(String(50), primary_key=True)
     Marque = Column(String(100), nullable=False)
     Modele = Column(String(100), nullable=False)
-    NumeroSerie = Column(String(100), nullable=False)  # Numéro de série obligatoire
+    NumSerie = Column(String(100), nullable=False)  # Numéro de série obligatoire
     Capacite = Column(String(20), nullable=True)  # 9kg, 10kg, etc.
     Technologie = Column(Enum(Technologie), nullable=True)  # Direct-Drive, Inverter, Universal
     

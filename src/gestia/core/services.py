@@ -20,13 +20,13 @@ from .models import (
 
 class AppareilService:
     @staticmethod
-    def creer_appareil(db: Session, marque: str, modele: str, numero_serie: str, date_reception: date) -> Appareil:
+    def creer_appareil(db: Session, marque: str, modele: str, num_serie: str, date_reception: date) -> Appareil:
         """Crée un nouvel appareil"""
         appareil = Appareil(
             ID_Appareil=f"APP_{uuid.uuid4().hex[:8].upper()}",
             Marque=marque,
             Modele=modele,
-            NumeroSerie=numero_serie,
+            NumSerie=num_serie,
             DateReception=date_reception,
             Etat=EtatAppareil.EN_TEST
         )

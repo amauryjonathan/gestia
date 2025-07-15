@@ -71,6 +71,19 @@ class DatabaseMigrator:
         conn.commit()
         conn.close()
     
+    def mark_applied(self, version):
+        """Marque manuellement une migration comme appliquée"""
+        all_migrations = self.get_all_migrations()
+        migration = next((m for m in all_migrations if m['version'] == version), None)
+        
+        if not migration:
+            print(f"❌ Migration {version} non trouvée")
+            return False
+        
+        print(f"✅ Marquage de la migration {version} comme appliquée")
+        self.mark_migration_applied(version, migration['description'])
+        return True
+    
     def run_migration(self, version, description, sql_commands):
         """Exécute une migration"""
         print(f"🔄 Migration {version}: {description}")
@@ -129,7 +142,15 @@ class DatabaseMigrator:
                 'sql': [
                     'ALTER TABLE appareils ADD COLUMN NumeroSerie TEXT'
                 ]
-            }
+            },
+            
+            {
+                'version': '005',
+                'description': 'add action à faire',
+                'sql': [
+                    'ALTER TABLE appareils ADD COLUMN ActionsAFAIRE TEXT;',
+                ]
+            },
             # 🚀 POUR AJOUTER UNE NOUVELLE MIGRATION :
             # Ajoutez ici un nouveau dictionnaire avec :
             # - version: '005_nom_de_la_migration'
@@ -198,12 +219,12 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description="Gestionnaire de migrations GESTIA")
-    parser.add_argument('action', choices=['migrate', 'status', 'create'], 
+    parser.add_argument('action', choices=['migrate', 'status', 'create', 'mark-applied'], 
                        help='Action à effectuer')
     parser.add_argument('--env', default='development', 
                        choices=['development', 'test', 'production'],
                        help='Environnement cible')
-    parser.add_argument('--version', help='Version de la migration (pour create)')
+    parser.add_argument('--version', help='Version de la migration (pour create ou mark-applied)')
     parser.add_argument('--description', help='Description de la migration (pour create)')
     parser.add_argument('--sql', nargs='+', help='Commandes SQL (pour create)')
     
@@ -220,6 +241,11 @@ def main():
             print("❌ Pour créer une migration, spécifiez --version, --description et --sql")
             return
         migrator.create_migration(args.version, args.description, args.sql)
+    elif args.action == 'mark-applied':
+        if not args.version:
+            print("❌ Pour marquer une migration comme appliquée, spécifiez --version")
+            return
+        migrator.mark_applied(args.version)
 
 if __name__ == "__main__":
     main() 

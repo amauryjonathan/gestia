@@ -87,20 +87,20 @@ def generer_donnees_test():
                 date_reception = date.today() - timedelta(days=jours_aleatoires)
                 
                 # Numéro de série unique
-                numero_serie = f"SN{random.randint(100000000, 999999999)}"
+                num_serie = f"SN{random.randint(100000000, 999999999)}"
                 
                 # État aléatoire
                 etats = list(EtatAppareil)
                 etat = random.choice(etats)
                 
-                appareil = AppareilService.creer_appareil(db, marque, modele_variant, numero_serie, date_reception)
+                appareil = AppareilService.creer_appareil(db, marque, modele_variant, num_serie, date_reception)
                 
                 # Modifier l'état si nécessaire
                 if etat != EtatAppareil.EN_TEST:
                     AppareilService.modifier_etat_appareil(db, appareil.ID_Appareil, etat)
                 
                 appareils.append(appareil)
-                print(f"  [OK] {marque} {modele_variant} créé (ID: {appareil.ID_Appareil}, S/N: {numero_serie}, État: {etat.value})")
+                print(f"  [OK] {marque} {modele_variant} créé (ID: {appareil.ID_Appareil}, S/N: {num_serie}, État: {etat.value})")
         
         # 3. Créer des sessions de test
         print("\n[SESSIONS] Création des sessions de test...")

@@ -87,7 +87,7 @@ def generate_test_data(environment):
             {
                 'marque': 'Samsung',
                 'modele': 'WW90T534DAW',
-                'serie': 'EcoBubble',
+                'num_serie': 'EcoBubble',
                 'capacite': '9kg',
                 'technologie': 'Inverter',
                 'variante': 'A',
@@ -96,7 +96,7 @@ def generate_test_data(environment):
             {
                 'marque': 'LG',
                 'modele': 'F4WV510S0E',
-                'serie': 'Steam',
+                'num_serie': 'Steam',
                 'capacite': '10.5kg',
                 'technologie': 'Direct Drive',
                 'variante': 'C',
@@ -105,7 +105,7 @@ def generate_test_data(environment):
             {
                 'marque': 'Bosch',
                 'modele': 'WAT28441FF',
-                'serie': 'EcoSilence',
+                'num_serie': 'EcoSilence',
                 'capacite': '8kg',
                 'technologie': 'Brushless',
                 'variante': 'B',
@@ -123,7 +123,7 @@ def generate_test_data(environment):
             )
             
             # Mettre à jour avec les nouveaux champs
-            appareil.Serie = data['serie']
+            appareil.NumSerie = data['num_serie']
             appareil.Capacite = data['capacite']
             appareil.Technologie = data['technologie']
             appareil.Variante = data['variante']

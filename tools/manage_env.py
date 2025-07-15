@@ -11,6 +11,7 @@ import sys
 import argparse
 import json
 from datetime import datetime
+from tools.db.migrate_db import DatabaseMigrator
 
 CONFIG_FILE = "data/.env_config.json"
 
@@ -271,7 +272,7 @@ def main():
         reinitialiser_environnement(args.env, args.force)
     
     elif args.action == 'generate':
-        generer_donnees_test()
+        generer_donnees_test() 
     
     elif args.action == 'run':
         lancer_application()
