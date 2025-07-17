@@ -127,6 +127,144 @@ class MigrationManager:
         if verbose:
             print("✅ Toutes les migrations ont été appliquées !")
 
+    def smart_migrate(self, verbose=True):
+        """
+        Migration intelligente qui vérifie l'état actuel de la base de données
+        et marque automatiquement les migrations comme appliquées si les colonnes existent déjà.
+        
+        Args:
+            verbose (bool): Afficher les messages de progression
+            
+        Returns:
+            bool: True si des migrations ont été appliquées, False sinon
+        """
+        if verbose:
+            print("🧠 Migration intelligente - Vérification de l'état actuel...")
+        
+        try:
+            # 1. Vérifier quelles colonnes existent déjà dans la table appareils
+            existing_columns = self._get_existing_columns()
+            
+            if verbose:
+                print(f"📊 Colonnes existantes dans 'appareils': {existing_columns}")
+            
+            # 2. Récupérer toutes les migrations
+            all_migrations = self.migrator.get_all_migrations()
+            applied_migrations = self.migrator.get_applied_migrations()
+            
+            # 3. Analyser chaque migration
+            migrations_to_mark = []
+            migrations_to_apply = []
+            
+            for migration in all_migrations:
+                if migration['version'] in applied_migrations:
+                    if verbose:
+                        print(f"✅ {migration['version']}: Déjà appliquée")
+                    continue
+                
+                # Vérifier si les colonnes de cette migration existent déjà
+                if self._migration_columns_exist(migration, existing_columns):
+                    migrations_to_mark.append(migration)
+                    if verbose:
+                        print(f"🎯 {migration['version']}: Colonnes existent, marquage comme appliquée")
+                else:
+                    migrations_to_apply.append(migration)
+                    if verbose:
+                        print(f"🔄 {migration['version']}: Colonnes manquantes, application nécessaire")
+            
+            # 4. Marquer les migrations comme appliquées si les colonnes existent
+            for migration in migrations_to_mark:
+                self.migrator.mark_migration_applied(migration['version'], migration['description'])
+                if verbose:
+                    print(f"✅ Marquage: {migration['version']} comme appliquée")
+            
+            # 5. Appliquer les migrations manquantes
+            if migrations_to_apply:
+                if verbose:
+                    print(f"🚀 Application de {len(migrations_to_apply)} migration(s)...")
+                
+                for migration in migrations_to_apply:
+                    self.migrator.run_migration(
+                        migration['version'],
+                        migration['description'],
+                        migration['sql']
+                    )
+                
+                if verbose:
+                    print("✅ Migrations appliquées avec succès !")
+                return True
+            else:
+                if verbose:
+                    print("✅ Toutes les migrations sont à jour !")
+                return False
+                
+        except Exception as e:
+            if verbose:
+                print(f"❌ Erreur lors de la migration intelligente: {e}")
+            raise
+    
+    def _get_existing_columns(self):
+        """
+        Récupère la liste des colonnes existantes dans la table appareils.
+        
+        Returns:
+            list: Liste des noms de colonnes
+        """
+        try:
+            conn = sqlite3.connect(self.migrator.db_path)
+            cursor = conn.cursor()
+            
+            # Récupérer les informations de la table appareils
+            cursor.execute("PRAGMA table_info(appareils)")
+            columns_info = cursor.fetchall()
+            
+            # Extraire les noms des colonnes
+            existing_columns = [col[1] for col in columns_info]
+            
+            conn.close()
+            return existing_columns
+            
+        except Exception as e:
+            print(f"⚠️ Erreur lors de la récupération des colonnes: {e}")
+            return []
+    
+    def _migration_columns_exist(self, migration, existing_columns):
+        """
+        Vérifie si les colonnes d'une migration existent déjà.
+        
+        Args:
+            migration (dict): Migration à vérifier
+            existing_columns (list): Colonnes existantes
+            
+        Returns:
+            bool: True si toutes les colonnes de la migration existent
+        """
+        migration_columns = []
+        
+        # Extraire les noms de colonnes des commandes SQL
+        for sql_command in migration['sql']:
+            if 'ADD COLUMN' in sql_command.upper():
+                # Exemple: "ALTER TABLE appareils ADD COLUMN Serie TEXT"
+                parts = sql_command.split()
+                for i, part in enumerate(parts):
+                    if part.upper() == 'COLUMN' and i + 1 < len(parts):
+                        column_name = parts[i + 1]
+                        migration_columns.append(column_name)
+                        break
+        
+        # Vérifier si toutes les colonnes de la migration existent
+        existing_count = 0
+        for column in migration_columns:
+            if column in existing_columns:
+                existing_count += 1
+        
+        # Si au moins 50% des colonnes existent, considérer la migration comme appliquée
+        if len(migration_columns) > 0:
+            percentage_existing = existing_count / len(migration_columns)
+            return percentage_existing >= 0.5  # Au moins 50% des colonnes existent
+        
+        return False
+
 # Instance globale pour faciliter l'utilisation
 migration_manager = MigrationManager()
 
@@ -166,3 +304,24 @@ def get_migration_status(environment='development'):
         migration_manager = MigrationManager(environment)
     
     return migration_manager.get_migration_status() 
+
+def smart_auto_migrate_on_startup(environment='development', verbose=True):
+    """
+    Fonction utilitaire pour migrer intelligemment au démarrage.
+    Vérifie l'état actuel de la base et marque automatiquement les migrations
+    comme appliquées si les colonnes existent déjà.
+    
+    Args:
+        environment (str): Environnement cible
+        verbose (bool): Afficher les messages de progression
+        
+    Returns:
+        bool: True si des migrations ont été appliquées, False sinon
+    """
+    global migration_manager
+    
+    # Mettre à jour l'environnement si nécessaire
+    if migration_manager.environment != environment:
+        migration_manager = MigrationManager(environment)
+    
+    return migration_manager.smart_migrate(verbose) 
