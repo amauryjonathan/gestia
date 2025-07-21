@@ -64,11 +64,12 @@ class InterfaceConsole:
         print("\n--- CRÉATION D'UN NOUVEL APPAREIL ---")
         marque = input("Marque : ")
         modele = input("Modèle : ")
+        num_serie = input("Numéro de série : ")
         date_reception = input("Date de réception (YYYY-MM-DD) : ")
         
         try:
             date_rec = date.fromisoformat(date_reception)
-            appareil = AppareilService.creer_appareil(self.db, marque, modele, date_rec)
+            appareil = AppareilService.creer_appareil(self.db, marque, modele, num_serie, date_rec)
             print(f"✅ Appareil créé avec succès ! ID: {appareil.ID_Appareil}")
         except Exception as e:
             print(f"❌ Erreur lors de la création : {e}")

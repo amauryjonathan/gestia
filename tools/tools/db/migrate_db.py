@@ -143,14 +143,6 @@ class DatabaseMigrator:
                     'ALTER TABLE appareils ADD COLUMN NumeroSerie TEXT'
                 ]
             },
-            
-            {
-                'version': '005',
-                'description': 'add action à faire',
-                'sql': [
-                    'ALTER TABLE appareils ADD COLUMN ActionsAFAIRE TEXT;',
-                ]
-            },
             # 🚀 POUR AJOUTER UNE NOUVELLE MIGRATION :
             # Ajoutez ici un nouveau dictionnaire avec :
             # - version: '005_nom_de_la_migration'

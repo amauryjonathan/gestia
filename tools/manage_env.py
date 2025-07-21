@@ -46,15 +46,15 @@ def afficher_environnement_actuel():
     env = charger_environnement()
     print(f"🎯 Environnement actuel : {env}")
     
-    # Afficher le chemin de la base de données
+    # Afficher le chemin de la base de données (CORRECTION : utiliser la même structure)
     if env == 'development':
-        db_path = "data/gestia_dev.db"
+        db_path = "data/development/gestia.db"
     elif env == 'production':
-        db_path = "data/gestia_prod.db"
+        db_path = "data/production/gestia.db"
     elif env == 'test':
-        db_path = "data/gestia_test.db"
+        db_path = "data/test/gestia.db"
     else:
-        db_path = "data/gestia_dev.db"
+        db_path = "data/development/gestia.db"
     
     if os.path.exists(db_path):
         taille = os.path.getsize(db_path) / (1024 * 1024)
@@ -97,8 +97,8 @@ def generer_donnees_test():
     # Exécuter le script de génération directement
     try:
         import subprocess
-        import os
         
+        import os
         # Obtenir le chemin du script de génération
         script_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'scripts', 'generate_test_data.py')
         
