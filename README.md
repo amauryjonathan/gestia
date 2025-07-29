@@ -201,9 +201,9 @@ python -m pytest tests/ --cov=src/gestia
 - `GESTIA_ENV` : Environnement actuel (development/test/production)
 
 ### Bases de données
-- `data/gestia_dev.db` : Base de développement
-- `data/gestia_test.db` : Base de test
-- `data/gestia_prod.db` : Base de production
+- `data/development/gestia.db` : Base de développement
+- `data/production/gestia.db` : Base de production
+- `data/test/gestia.db` : Base de test
 
 ## 📊 Statistiques
 

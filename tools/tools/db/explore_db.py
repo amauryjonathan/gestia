@@ -5,17 +5,48 @@ Script pour explorer la base de données GESTIA
 
 import sqlite3
 import os
+import json
+import sys
+
+def get_current_environment():
+    """Lit l'environnement actuel depuis le fichier de configuration"""
+    try:
+        config_file = "data/.env_config.json"
+        if os.path.exists(config_file):
+            with open(config_file, 'r') as f:
+                config = json.load(f)
+                return config.get('environment', 'development')
+    except Exception as e:
+        print(f"⚠️ Erreur lors de la lecture de la configuration: {e}")
+    return 'development'
+
+def get_database_path(environment=None):
+    """Retourne le chemin de la base de données pour l'environnement"""
+    if environment is None:
+        environment = get_current_environment()
+    
+    return f"data/{environment}/gestia.db"
 
 def explorer_base_donnees():
     """Explore et affiche le contenu de la base de données"""
     
-    if not os.path.exists('gestia.db'):
-        print("❌ Fichier gestia.db non trouvé!")
+    # Obtenir l'environnement et le chemin de la base
+    environment = get_current_environment()
+    db_path = get_database_path(environment)
+    
+    print(f"🔍 Exploration de la base de données GESTIA")
+    print(f"📁 Environnement: {environment}")
+    print(f"📁 Chemin: {db_path}")
+    print("=" * 50)
+    
+    if not os.path.exists(db_path):
+        print(f"❌ Fichier {db_path} non trouvé!")
+        print(f"💡 Vérifiez que l'environnement '{environment}' est correctement configuré")
         return
     
     try:
         # Connexion à la base de données
-        conn = sqlite3.connect('gestia.db')
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         
         print("🗄️ EXPLORATION DE LA BASE DE DONNÉES GESTIA")

@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-07-29T08:53:29.000344",
+  "os": "Windows",
+  "version": "11",
+  "python": "3.12.9 (tags/v3.12.9:fdb8142, Feb  4 2025, 15:27:58) [MSC v.1942 64 bit (AMD64)]",
+  "architecture": "AMD64",
+  "checks": {
+    "structure": true,
+    "database": true,
+    "dependencies": true,
+    "paths": true,
+    "encoding": true
+  },
+  "errors": [],
+  "warnings": [
+    "Chemin normalisé: data/development/gestia.db",
+    "Chemin normalisé: data/production/gestia.db",
+    "Chemin normalisé: data/test/gestia.db",
+    "Fichier non commité: M README.md",
+    "Fichier non commité:  M tools/tools/db/explore_db.py",
+    "Fichier non commité: ?? portability_report_windows.json",
+    "Fichier non commité: ?? tools/README_CLI.md",
+    "Fichier non commité: ?? tools/check_portability.py",
+    "Fichier non commité: ?? tools/compare_environments.py",
+    "Fichier non commité: ?? tools/professional_portability_check.py"
+  ]
+}
