@@ -30,8 +30,8 @@ def initialize_system():
     
     # Hook 1: Vérifications de base de données
     try:
-        from gestia.core.migration_manager import auto_migrate_on_startup
-        auto_migrate_on_startup(verbose=True)
+        from gestia.core.migration_manager import smart_auto_migrate_on_startup
+        smart_auto_migrate_on_startup(verbose=True)
     except Exception as e:
         print(f"⚠️ Erreur migrations: {e}")
     
